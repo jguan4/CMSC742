@@ -22,7 +22,7 @@ from python.input.MNIST_input_pipeline import MNIST
 from python.input.cifar10_input_pipeline import Cifar10
 from python.input.cifar100_input_pipeline import Cifar100
 from python.input.smallNORB_input_pipeline import smallNORB
-from python.models.BranchingMerging import SmallImageBranchingMerging
+from python.models.SmallImageBranchingMerging import SmallImageBranchingMerging
 import tensorflow as tf
 
 
@@ -54,7 +54,7 @@ def go(data_dir, log_dir, output_file, input_pipeline, merge_strategy,
 
         model = SmallImageBranchingMerging(in_pipe.get_class_count(),
                     in_pipe.get_image_size(), in_pipe.get_image_channels(),
-                    merge_strategy, use_hvcs, hvc_type, hvc_dims,
+                    merge_strategy, use_hvcs, hvc_type, 5, 10, hvc_dims,
                     total_convolutions, branches_after, False)
 
         for weights_file in files:
@@ -76,9 +76,9 @@ def go(data_dir, log_dir, output_file, input_pipeline, merge_strategy,
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data_dir", default=r"../../../../Datasets/smallNORB_data")
-    p.add_argument("--log_dir", default=r"../../logs/20210609135430")
+    p.add_argument("--log_dir", default=r"../../logs/20211029114910")
     p.add_argument("--output_file",
-        default=r"../../logs/20210609135430/final_branch_weights.txt")
+        default=r"../logs/20211029114910/final_branch_weights.txt")
     p.add_argument("--input_pipeline", default=5, type=int)
     p.add_argument("--merge_strategy", default=2, type=float)
     p.add_argument("--use_hvcs", default=True, type=bool)
