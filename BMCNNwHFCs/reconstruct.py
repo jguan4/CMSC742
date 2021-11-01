@@ -27,7 +27,7 @@ from python.constructs.loggable import Loggable
 from python.constructs.loss import MeanSquaredError
 from python.constructs.learning_rate import ManualExponentialDecay
 from python.input.MNIST_input_pipeline import MNIST
-from python.models.BranchingMerging import SmallImageBranchingMerging
+from python.models.SmallImageBranchingMerging import SmallImageBranchingMerging
 import tensorflow as tf
 
 
@@ -67,7 +67,7 @@ def go(run_name, end_epoch, data_dir, log_dir, merge_strategy, batch_size,
 
         model = SmallImageBranchingMerging(in_pipe.get_class_count(),
                     in_pipe.get_image_size(), in_pipe.get_image_channels(),
-                    merge_strategy, True, hvc_type, hvc_dims,
+                    merge_strategy, True, hvc_type, 32, 16,  hvc_dims,
                     total_convolutions, branches_after, True)
 
         lr          = ManualExponentialDecay(0.001, 0.98, 1e-7)
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run_name", default=None)
     p.add_argument("--end_epoch", default=300, type=int)
-    p.add_argument("--data_dir", default=r"../../../Datasets/mnist_data")
+    p.add_argument("--data_dir", default=r"../Datasets/mnist_data")
     p.add_argument("--log_dir", default="../logs")
     p.add_argument("--batch_size", default=120, type=int)
     p.add_argument("--merge_strategy", default=2, type=float)
