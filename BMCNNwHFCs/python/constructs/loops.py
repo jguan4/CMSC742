@@ -122,6 +122,30 @@ class Loops(Loggable):
             self._ema_weights, epoch, self._metrics.get_loss(),
             self._metrics.get_top1(), self._metrics.get_top5())
 
+    def _validate_test(self):
+        self._metrics.reset()
+
+        dataset = self._strategy.experimental_distribute_datasets_from_function(
+            lambda input_context: self._dataset_distribute(input_context,
+                self._in_pipe.get_validation_dataset(0)))
+
+        step = 0
+        for features, labels in dataset:
+            loss, top1, top5, outputs = self._distributed_eval_step(
+                features, labels)
+
+            self._metrics.update_loss(loss)
+            self._metrics.update_accuracy(top1, top5)
+
+            self._out.validation_step_end(step)
+
+            step += 1
+
+        self._out.validation_end(self._model, self._optimizer,
+            self._ema_weights, 0, self._metrics.get_loss(),
+            self._metrics.get_top1(), self._metrics.get_top5())
+        return self._metrics.get_loss(), self._metrics.get_top1(), self._metrics.get_top5()
+
     def _log_graph_if_possible(self, graph_func, args):
         if not self._graph_logged and inspect.getsource(
                 graph_func).find("@tf.function") >= 0:

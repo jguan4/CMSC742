@@ -11,6 +11,7 @@ class Sketch(object):
 		self.S1s = []
 		self.S2s = []
 		self.conv_shapes = []
+		self.var_num = 0
 
 	def generate_S_U(self,conv_weights):
 		self.tot_conv = len(conv_weights)
@@ -18,8 +19,11 @@ class Sketch(object):
 			kernel = conv_weights[conv_ind]
 			[h,w,fin,fout] = kernel.shape
 			self.conv_shapes.append([h,w,fin,fout])
-			U1, S1 = self.generate_rand_pair(kernel,4,self.k,fout)
-			U2, S2 = self.generate_rand_pair(kernel,3,self.k,fin)
+			U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,self.k,fout)
+			self.var_num += S1_var_num
+			U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,self.k,fin)
+			self.var_num += S2_var_num
+			
 			self.U1s.append(U1)
 			self.S1s.append(S1)
 			self.U2s.append(U2)
@@ -28,25 +32,21 @@ class Sketch(object):
 	def generate_rand_pair(self, kernel, sdim, indim, outdim):
 		Us = []
 		Ss = []
+		S_var_num = 0
 		for i in range(self.l):
-			U = np.random.rand(indim,outdim)
-			U[U>=0.5] = 1
-			U[U<0.5] = -1
-			U = U/np.sqrt(indim)
+			U = self.generate_rand_signed_mat(indim,outdim)
 			S = mode_n_prod_4(kernel, U, sdim)
+			S_var_num += tf.size(S).numpy()
 			Us.append(U)
 			Ss.append(S)
-		return Us, Ss
+		return Us, Ss, S_var_num
 
 	def generate_rand_signed_mat(self, indim, outdim):
-		Us = []
-		for i in range(self.l):
-			U = np.random.rand(indim,outdim)
-			U[U>=0.5] = 1
-			U[U<0.5] = 0
-			U = U/np.sqrt(indim)
-			Us.append(U)
-		return Us
+		U = np.random.rand(indim,outdim)
+		U[U>=0.5] = 1
+		U[U<0.5] = -1
+		U = U/np.sqrt(indim)
+		return U
 
 	def reconstruct_kernels(self):
 		sk_kernels = []

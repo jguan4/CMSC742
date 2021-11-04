@@ -36,11 +36,12 @@ from python.input.smallNORB_input_pipeline import smallNORB
 from python.models.SmallImageBranchingMerging import SmallImageBranchingMerging
 from python.models.Sketch import Sketch
 import tensorflow as tf
+import pandas as pd
 
 
 def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy, loss_type,
        use_hvcs=True, hvc_type=1, hvc_dims=None, total_convolutions=None,
-       branches_after=None,sk_l = 10, sk_k = 1, batch_size = 120):
+       branches_after=None, sk_l = 10, sk_k = 1, batch_size = 120, realization = 10):
 
     files = []
     for dirname, _, filenames in os.walk(log_dir):
@@ -90,6 +91,11 @@ def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy,
         out.log_loggables([out, in_pipe, model,
             lr, optimizer, loss, metrics, ema_weights, loops])
         
+        vals = np.full((len(sk_l)*len(sk_k)+1, 3+realization), None)
+        colnames = ["realization{0}".format(r) for r in range(realization)]
+        colnames.insert(0,'num_of_var')
+        colnames.insert(0,'l')
+        colnames.insert(0,'k')
         for weights_file in files:
             print("Restoring weights file: {}".format(weights_file))
             ckpt = tf.train.Checkpoint(
@@ -97,20 +103,44 @@ def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy,
             ckpt.restore(weights_file).expect_partial()
             # weights = model.get_all_trainable_variables()
             kernels = model.get_conv_kernels()
+            loss,top1,top5 = loops._validate_test()
+            vals[0][0] = 0
+            vals[0][1] = 0
+            vals[0][3] = top1.numpy()
+            num_k = 0
+            for i in range(len(kernels)):
+                ki = kernels[i]
+                num_k += tf.size(ki).numpy()
+            vals[0][2] = num_k
+
 
             # print(model.get_all_trainable_variables())
             # input()
             # branch_weights.append(model.branch_weights.variable.numpy())
-            sketch = Sketch(sk_l,sk_k)
-            sketch.generate_S_U(kernels)
-            sk_kernels = sketch.reconstruct_kernels()
-            model.load_conv_kernels(sk_kernels)
+            counter = 1
+            for k in sk_k:
+                for l in sk_l:
+                    vals[counter][0] = k
+                    vals[counter][1] = l
+                    print("Start k = {0}, l = {1}:".format(k,l))
+                    for r in range(realization):
+                        ckpt.restore(weights_file).expect_partial()
 
-        loops._validate(0)
-        input()
+                        sketch = Sketch(l,k)
+                        sketch.generate_S_U(kernels)
+                        if r == 0:
+                            vals[counter][2] = sketch.var_num
+
+                        sk_kernels = sketch.reconstruct_kernels()
+                        model.load_conv_kernels(sk_kernels)
+                        loss,top1,top5 = loops._validate_test()
+                        vals[counter][r+3] = top1.numpy()
 
             # branch_weights.append(model.get_all_trainable_variables())
 
+    
+    df = pd.DataFrame(vals, columns=colnames)
+    df.to_csv("{0}/{1}/sk_test.csv".format(log_dir,run_name))
     # print("Saving final branch weights...")
     # # (False Positive)
     # # noinspection PyTypeChecker
@@ -133,9 +163,10 @@ if __name__ == "__main__":
     p.add_argument("--hvc_dims", default=[64, 112, 160], type=int)
     p.add_argument("--total_convolutions", default=9, type=int)
     p.add_argument("--branches_after", default=[2, 5, 8])
-    p.add_argument("--sk_l", default=10)
-    p.add_argument("--sk_k", default=1)
+    p.add_argument("--sk_l", default=[1,5,10,20,50,100])
+    p.add_argument("--sk_k", default=[1,2,4,8,16,32,64])
     p.add_argument("--loss_type", default=1, type=int)
+    p.add_argument("--realization", default=10, type=int)
     a = p.parse_args()
 
     # go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
@@ -148,4 +179,4 @@ if __name__ == "__main__":
     go(run_name = a.run_name, data_dir=a.data_dir, log_dir=a.log_dir, output_file=a.output_file,
        input_pipeline=a.input_pipeline, merge_strategy=a.merge_strategy,
        use_hvcs=a.use_hvcs, hvc_type=a.hvc_type, hvc_dims=a.hvc_dims,
-       total_convolutions=a.total_convolutions, branches_after=a.branches_after, sk_l = a.sk_l, sk_k = a.sk_k,loss_type=a.loss_type)
+       total_convolutions=a.total_convolutions, branches_after=a.branches_after, sk_l = a.sk_l, sk_k = a.sk_k,loss_type=a.loss_type,realization = a.realization)
