@@ -31,7 +31,7 @@ class Sketch(object):
 		for i in range(self.l):
 			U = np.random.rand(indim,outdim)
 			U[U>=0.5] = 1
-			U[U<0.5] = 0
+			U[U<0.5] = -1
 			U = U/np.sqrt(indim)
 			S = mode_n_prod_4(kernel, U, sdim)
 			Us.append(U)
