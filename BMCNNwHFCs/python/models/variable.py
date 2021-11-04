@@ -28,6 +28,12 @@ class Variable(object):
     def get_savable_variables(self):
         return [self.variable]
 
+    def load_kernel(self,kernel):
+        self.variable.assign(kernel)
+
+    def return_kernel(self):
+        return self.variable
+
     def __str__(self):
         return "Variable({})".format(self.variable)
 
@@ -45,6 +51,12 @@ class VariableWBias(object):
 
     def get_savable_variables(self):
         return [self.variable, self.bias]
+
+    def load_kernel(self,kernel):
+        self.variable.assign(kernel)
+
+    def return_kernel(self):
+        return self.variable
 
     def __str__(self):
         return "VariableWBias({};{})".format(self.variable, self.bias)
@@ -74,6 +86,12 @@ class VariableWBatchNorm(object):
 
     def get_savable_variables(self):
         return [self.variable, self.bn_beta, self.bn_mean, self.bn_variance]
+
+    def load_kernel(self,kernel):
+        self.variable.assign(kernel)
+
+    def return_kernel(self):
+        return self.variable
 
     def __str__(self):
         return "VariableWBatchNorm({};{};{};{})".format(

@@ -28,7 +28,7 @@ class SmallImageBranchingMerging(Loggable):
     def __init__(self, count_classes, image_size, image_channels,
             merge_strategy, use_hvcs, hvc_type, initial_filters,
             filter_growth, hvc_dims, total_convolutions, branches_after,
-            reconstruct_from_hvcs):
+            reconstruct_from_hvcs,sk_conv = False):
         Loggable.__init__(self)
 
         self._count_classes         = count_classes
@@ -44,16 +44,19 @@ class SmallImageBranchingMerging(Loggable):
         self._branches_after        = branches_after
         self._reconstruct_from_hvcs = reconstruct_from_hvcs
 
+        layer_ind = 0
         with tf.name_scope("variables"):
             prior_size   = self._image_channels
             tensor_size  = self._image_size
             self.vars    = []
             conv_filters = self._initial_filters
             branch_no    = 0
-
+            self.conv_inds = []
+            
             for var_idx in range(self._total_convolutions):
                 self.vars.append(get_conv_3x3_batch_norm_variable(
                     "W_conv" + str(var_idx), prior_size, conv_filters))
+                self.conv_inds.append(layer_ind)
 
                 tensor_size -= 2
 
@@ -61,10 +64,11 @@ class SmallImageBranchingMerging(Loggable):
                     self._create_branch_vars(branch_no,
                         var_idx, conv_filters, tensor_size**2)
                     branch_no += 1
+                    layer_ind += 1
 
                 prior_size    = conv_filters
                 conv_filters += self._filter_growth
-
+                layer_ind += 1
             initer    = tf.ones_initializer()
             trainable = False
             if self._merge_strategy == 1:
@@ -132,6 +136,19 @@ class SmallImageBranchingMerging(Loggable):
 
         return output + [v for v in
             self.branch_weights.get_savable_variables()]
+
+    def load_conv_kernels(self, conv_kernels):
+        for i in range(self._total_convolutions):
+            conv_layer = self.vars[self.conv_inds[i]]
+            conv_layer.load_kernel(conv_kernels[i])
+
+    def get_conv_kernels(self):
+        kernels = []
+        for i in range(self._total_convolutions):
+            conv_layer = self.vars[self.conv_inds[i]]
+            kernel = conv_layer.return_kernel()
+            kernels.append(kernel)
+        return kernels
 
     def forward(self, features, labels, is_training, perturbation=None):
         with tf.name_scope("forward"):
