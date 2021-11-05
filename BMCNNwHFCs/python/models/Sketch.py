@@ -3,9 +3,10 @@ import numpy as np
 from python.models.sk_ops import *
 
 class Sketch(object):
-	def __init__(self, l,k):
+	def __init__(self, l,k, k_factor = False):
 		self.l = l
-		self.k = k 
+		self.k = k
+		self.k_factor = k_factor
 		self.U1s = []
 		self.U2s = []
 		self.S1s = []
@@ -19,11 +20,14 @@ class Sketch(object):
 			kernel = conv_weights[conv_ind]
 			[h,w,fin,fout] = kernel.shape
 			self.conv_shapes.append([h,w,fin,fout])
-			U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,self.k,fout)
-			self.var_num += S1_var_num
-			U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,self.k,fin)
-			self.var_num += S2_var_num
+			if self.k_factor:
+				U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,int(fin/self.k),fout)
+				U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,int(fout/self.k),fin)
+			else:
+				U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,self.k,fout)
+				U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,self.k,fin)
 			
+			self.var_num += S1_var_num + S2_var_num
 			self.U1s.append(U1)
 			self.S1s.append(S1)
 			self.U2s.append(U2)

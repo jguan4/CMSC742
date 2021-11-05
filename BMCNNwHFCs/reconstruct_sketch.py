@@ -41,7 +41,7 @@ import pandas as pd
 
 def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy, loss_type,
        use_hvcs=True, hvc_type=1, hvc_dims=None, total_convolutions=None,
-       branches_after=None, sk_l = 10, sk_k = 1, batch_size = 120, realization = 10):
+       branches_after=None, sk_l = 10, sk_k = 1, batch_size = 120, realization = 10, sk_factor = False):
 
     files = []
     for dirname, _, filenames in os.walk(log_dir):
@@ -126,7 +126,7 @@ def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy,
                     for r in range(realization):
                         ckpt.restore(weights_file).expect_partial()
 
-                        sketch = Sketch(l,k)
+                        sketch = Sketch(l,k,sk_factor)
                         sketch.generate_S_U(kernels)
                         if r == 0:
                             vals[counter][2] = sketch.var_num
@@ -136,11 +136,13 @@ def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy,
                         loss,top1,top5 = loops._validate_test()
                         vals[counter][r+3] = top1.numpy()
 
+                    counter +=1
+
             # branch_weights.append(model.get_all_trainable_variables())
 
     
     df = pd.DataFrame(vals, columns=colnames)
-    df.to_csv("{0}/{1}/sk_test.csv".format(log_dir,run_name))
+    df.to_csv("{0}/{1}/sk_test_factor.csv".format(log_dir,run_name))
     # print("Saving final branch weights...")
     # # (False Positive)
     # # noinspection PyTypeChecker
@@ -167,6 +169,7 @@ if __name__ == "__main__":
     p.add_argument("--sk_k", default=[1,2,4,8,16,32,64])
     p.add_argument("--loss_type", default=1, type=int)
     p.add_argument("--realization", default=10, type=int)
+    p.add_argument("--sk_factor", default=True, type=bool)
     a = p.parse_args()
 
     # go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
@@ -179,4 +182,4 @@ if __name__ == "__main__":
     go(run_name = a.run_name, data_dir=a.data_dir, log_dir=a.log_dir, output_file=a.output_file,
        input_pipeline=a.input_pipeline, merge_strategy=a.merge_strategy,
        use_hvcs=a.use_hvcs, hvc_type=a.hvc_type, hvc_dims=a.hvc_dims,
-       total_convolutions=a.total_convolutions, branches_after=a.branches_after, sk_l = a.sk_l, sk_k = a.sk_k,loss_type=a.loss_type,realization = a.realization)
+       total_convolutions=a.total_convolutions, branches_after=a.branches_after, sk_l = a.sk_l, sk_k = a.sk_k,loss_type=a.loss_type,realization = a.realization, sk_factor = a.sk_factor)
