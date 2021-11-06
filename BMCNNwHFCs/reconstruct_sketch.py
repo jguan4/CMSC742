@@ -102,6 +102,9 @@ def go(run_name, data_dir, log_dir, output_file, input_pipeline, merge_strategy,
                     vars=model.get_all_savable_variables())
             ckpt.restore(weights_file).expect_partial()
             # weights = model.get_all_trainable_variables()
+            # for i in range(len(weights)):
+            #     print(weights[i].name, weights[i].shape)
+            #     input()
             kernels = model.get_conv_kernels()
             loss,top1,top5 = loops._validate_test()
             vals[0][0] = 0

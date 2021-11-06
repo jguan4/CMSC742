@@ -17,16 +17,16 @@ from datetime import datetime
 from python.train import go
 
 # Merge Strategy 0 (equal branch weights, not learnable)
-for i in range(32):
-    go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
-       data_dir=r"../Datasets/mnist_data", input_pipeline=1,
-       log_dir="../logs_ms0", batch_size=120, merge_strategy=0, loss_type=1,
-       use_hvcs=True, hvc_type=2, hvc_dims=[64, 112, 160],
-       use_augmentation=True, augmentation_type=1, total_convolutions=9,
-       branches_after=[2, 5, 8], reconstruct_from_hvcs=True)
+# for i in range(1):
+#     go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
+#        data_dir=r"../Datasets/mnist_data", input_pipeline=1,
+#        log_dir="../logs_ms0", batch_size=120, merge_strategy=0, loss_type=1,
+#        use_hvcs=True, hvc_type=2, hvc_dims=[64, 112, 160],
+#        use_augmentation=True, augmentation_type=1, total_convolutions=9,
+#        branches_after=[2, 5, 8], reconstruct_from_hvcs=True)
 
 # Merge Strategy 1 (learnable branch weights, initialized randomly)
-for i in range(32):
+for i in range(1):
     go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
        data_dir=r"../Datasets/mnist_data", input_pipeline=1,
        log_dir="../logs_ms1", batch_size=120, merge_strategy=1, loss_type=1,
@@ -35,7 +35,7 @@ for i in range(32):
        branches_after=[2, 5, 8], reconstruct_from_hvcs=True)
 
 # Merge Strategy 2 (learnable branch weights, initialized to one)
-for i in range(32):
+for i in range(1):
     go(run_name=datetime.now().strftime("%Y%m%d%H%M%S"), end_epoch=300,
        data_dir=r"../Datasets/mnist_data", input_pipeline=1,
        log_dir="../logs_ms2", batch_size=120, merge_strategy=2, loss_type=1,
