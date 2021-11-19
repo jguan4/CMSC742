@@ -52,6 +52,7 @@ class SmallImageBranchingMerging(Loggable):
             conv_filters = self._initial_filters
             branch_no    = 0
             self.conv_inds = []
+            self.cap_inds = []
             
             for var_idx in range(self._total_convolutions):
                 self.vars.append(get_conv_3x3_batch_norm_variable(
@@ -65,6 +66,7 @@ class SmallImageBranchingMerging(Loggable):
                         var_idx, conv_filters, tensor_size**2)
                     branch_no += 1
                     layer_ind += 1
+                    self.cap_inds.append(layer_ind)
 
                 prior_size    = conv_filters
                 conv_filters += self._filter_growth
@@ -149,6 +151,19 @@ class SmallImageBranchingMerging(Loggable):
             kernel = conv_layer.return_kernel()
             kernels.append(kernel)
         return kernels
+
+    def load_cap_weights(self, cap_weights):
+        for i in range(len(self._branches_after)):
+            cap_layer = self.vars[self.cap_inds[i]]
+            cap_layer.load_kernel(cap_weights[i])
+
+    def get_cap_weights(self):
+        weights = []
+        for i in range(len(self._branches_after)):
+            cap_layer = self.vars[self.cap_inds[i]]
+            weight = cap_layer.return_kernel()
+            weights.append(weight)
+        return weights
 
     def forward(self, features, labels, is_training, perturbation=None):
         with tf.name_scope("forward"):
