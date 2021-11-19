@@ -39,7 +39,7 @@ class Sketch(object):
 		S_var_num = 0
 		for i in range(self.l):
 			U = self.generate_rand_signed_mat(indim,outdim)
-			S = mode_n_prod_4(kernel, U, sdim)
+			S = mode_n_prod_4(kernel, U, sdim-1)
 			S_var_num += tf.size(S).numpy()
 			Us.append(U)
 			Ss.append(S)
@@ -65,8 +65,8 @@ class Sketch(object):
 				U2 = U2_list[i]
 				S1 = S1_list[i]
 				S2 = S2_list[i]
-				kernel = kernel + mode_n_prod_T_4(S1,U1,4)
-				kernel = kernel + mode_n_prod_T_4(S2,U2,3)
+				kernel = kernel + mode_n_prod_T_4(S1,U1,3)
+				kernel = kernel + mode_n_prod_T_4(S2,U2,2)
 			kernel = kernel/(2*self.l)
 			sk_kernels.append(kernel)
 		return sk_kernels
