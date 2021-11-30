@@ -11,6 +11,9 @@ class CP_decomp(object):
 		self.var_num = 0
 		self.cp_kernels = []
 
+	def start_compressing(self, conv_weights):
+		self.decomp_kernels(conv_weights)
+
 	def decomp_kernels(self, kernels):
 		for conv_ind in range(len(kernels)):
 			kernel_layer = kernels[conv_ind]

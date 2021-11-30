@@ -36,4 +36,14 @@ def out_prod_4(veclist):
 	e = tf.einsum('i,j,k,m->ijkm', a,b,c,d)
 	return e
 
+def out_prod_2(veclist):
+	[a,b] = veclist
+	e = tf.einsum('i,j->ij', a,b)
+	return e
 
+def out_prod_n(veclist):
+	n = len(veclist)
+	if n == 2:
+		return out_prod_2(veclist)
+	elif n == 4:
+		return out_prod_4(veclist)

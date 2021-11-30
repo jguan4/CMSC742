@@ -14,6 +14,9 @@ class Sketch(object):
 		self.conv_shapes = []
 		self.var_num = 0
 
+	def start_compressing(self, conv_weights):
+		self.generate_S_U(conv_weights)
+
 	def generate_S_U(self,conv_weights):
 		self.tot_conv = len(conv_weights)
 		for conv_ind in range((self.tot_conv)):
