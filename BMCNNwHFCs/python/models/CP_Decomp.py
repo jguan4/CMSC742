@@ -17,7 +17,11 @@ class CP_decomp(object):
 	def decomp_kernels(self, kernels):
 		for conv_ind in range(len(kernels)):
 			kernel_layer = kernels[conv_ind]
-			[h, w, fin, fout] = kernel_layer.shape
+			self.size = len(kernel_layer.shape)
+			if self.size == 3:
+				[h,fin,fout] = kernel_layer.shape
+			elif self.size == 4:
+				[h, w, fin, fout] = kernel_layer.shape
 			cp_kernel_layer = []
 			if self.cp_factor:
 				cp_rank = self.cp_dim
@@ -26,7 +30,11 @@ class CP_decomp(object):
 			for dim in range(h):
 				factors = parafac(kernel_layer[dim].numpy(), rank=cp_rank)
 				cp_kernel_layer.append(factors)
-			self.var_num += h * cp_rank * (w+fin+fout)
+			if self.size == 4:
+				self.var_num += h * cp_rank * (w+fin+fout)
+			elif self.size == 3:
+				self.var_num += h * cp_rank * (fin+fout)
+
 			self.cp_kernels.append(cp_kernel_layer)
 
 	def reconstruct_kernels(self):

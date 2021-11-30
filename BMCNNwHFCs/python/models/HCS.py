@@ -20,8 +20,14 @@ class HCS(object):
 		self.tot_conv = len(conv_weights)
 		for conv_ind in range((self.tot_conv)):
 			kernel = conv_weights[conv_ind]
-			[h,w,fin,fout] = kernel.shape
-			self.conv_shapes.append([h,w,fin,fout])
+			self.size = len(kernel.shape)
+			if self.size == 3:
+				[h,fin,fout] = kernel.shape
+				self.conv_shapes.append([h,fin,fout])
+
+			elif self.size == 4:
+				[h,w,fin,fout] = kernel.shape
+				self.conv_shapes.append([h,w,fin,fout])
 			
 			if self.hcs_factor:
 				compdim = [int(np.ceil(fin/self.hcs_k)), int(np.ceil(fout/self.hcs_k))]
@@ -35,7 +41,10 @@ class HCS(object):
 			self.HCSlist.append(HCSlists)
 
 	def generate_HCS_ave(self, kernel, compdim):
-		[h,w,fin,fout] = kernel.shape
+		if self.size == 3:
+			[h,fin,fout] = kernel.shape
+		elif self.size == 4:
+			[h,w,fin,fout] = kernel.shape
 		orgdim = [fin,fout]
 		S_lists = []
 		HCSlists = []
@@ -49,12 +58,12 @@ class HCS(object):
 			HCS = S*kernel
 
 			Hlist = []
-			
+			adddim = self.size-2
 			for dim in range(2):
 				indim = orgdim[dim]
 				outdim = compdim[dim]
 				H = self.generate_hash_mat(indim,outdim)
-				HCS = mode_n_prod_T_4(HCS, H, dim+2)
+				HCS = mode_n_prod_T_4(HCS, H, dim+adddim)
 				Hlist.append(H)
 
 			HCSlists.append(HCS)
@@ -63,7 +72,10 @@ class HCS(object):
 		return HCSlists, S_lists, Hs_lists, HCSvarnum
 
 	def repeat_S(self,S):
-		Sr = tf.tile(tf.expand_dims(tf.expand_dims(S,axis=0),axis=0),[3,3,1,1])
+		if self.size == 4:
+			Sr = tf.tile(tf.expand_dims(tf.expand_dims(S,axis=0),axis=0),[3,3,1,1])
+		elif self.size == 3:
+			Sr = tf.tile(tf.expand_dims(S,axis=0),[10,1,1])
 		return Sr
 
 	def generate_HCSs(self,conv_weights):
@@ -141,13 +153,14 @@ class HCS(object):
 			H_lists = self.Hlists[conv_ind]
 			kernel_shape = self.conv_shapes[conv_ind]
 			kernel = tf.zeros(kernel_shape)
+			adddim = self.size-2
 			for l in range(self.hcs_l):
 				S = S_list[l]
 				HCS = HCS_list[l]
 				Hlist = H_lists[l]
 				for i in range(2):
 					H = Hlist[i]
-					HCS = mode_n_prod_4(HCS,H,i+2)
+					HCS = mode_n_prod_4(HCS,H,i+adddim)
 				HCS = HCS*S
 				kernel = kernel + HCS
 			kernel = kernel/(2*self.hcs_l)
