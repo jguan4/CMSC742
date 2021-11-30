@@ -132,6 +132,7 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
         ckpt.restore(weights_file).expect_partial()
 
         kernels = model.get_conv_kernels()
+        caps = model.get_cap_weights()
         loss,top1,top5 = loops._validate_test()
         vals[0][0] = 0
         vals[0][1] = 0
@@ -143,10 +144,13 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
         for i in range(len(kernels)):
             ki = kernels[i]
             num_k += tf.size(ki).numpy()
+        num_c = 0
+        for i in range(len(caps)):
+            num_c += tf.size(caps[i]).numpy()
         if reconstruct_method == 'cp':
-            vals[0][2] = num_k
+            vals[0][2] = num_k + num_c
         else:
-            vals[0][3] = num_k
+            vals[0][3] = num_k + num_c
 
         counter = 1
         if reconstruct_method == 'sk':
@@ -160,12 +164,16 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         ckpt.restore(weights_file).expect_partial()
 
                         sketch = Sketch(l,k,sk_factor)
+                        c_sketch = Sketch(l, k, sk_factor)
+                        c_sketch.start_compressing(caps)
                         sketch.start_compressing(kernels)
                         if r == 0:
                             vals[counter][2] = sketch.var_num
 
                         sk_kernels = sketch.reconstruct_kernels()
                         model.load_conv_kernels(sk_kernels)
+                        sk_caps = c_sketch.reconstruct_kernels()
+                        model.load_cap_weights(sk_caps)
                         loss,top1,top5 = loops._validate_test()
                         vals[counter][r+4] = top1.numpy()
 
@@ -250,9 +258,9 @@ if __name__ == "__main__":
     a = p.parse_args()
 
     # choose merge strategy, options: 0, 1, 2
-    merge_strategy = 1
+    merge_strategy = 0
     # choose reconstruction strategy, options 'sk' (sketch), 'hcs' (higher-order count sketch), 'cp' (CP decomposition)
-    reconstruct_method = 'cp'
+    reconstruct_method = 'sk'
     # number of realizations to average over, used for 'sk' and 'hcs'
     realization_num = 1
 

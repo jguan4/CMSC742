@@ -21,14 +21,19 @@ class Sketch(object):
 		self.tot_conv = len(conv_weights)
 		for conv_ind in range((self.tot_conv)):
 			kernel = conv_weights[conv_ind]
-			[h,w,fin,fout] = kernel.shape
-			self.conv_shapes.append([h,w,fin,fout])
+			self.size = len(kernel.shape)
+			if self.size == 4:
+				[h,w,fin,fout] = kernel.shape
+				self.conv_shapes.append([h,w,fin,fout])
+			elif self.size == 3:
+				[h,fin,fout] = kernel.shape
+				self.conv_shapes.append([h,fin,fout])
 			if self.k_factor:
-				U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,int(fin/self.k),fout)
-				U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,int(fout/self.k),fin)
+				U1, S1, S1_var_num = self.generate_rand_pair(kernel,self.size,int(fin/self.k),fout)
+				U2, S2, S2_var_num = self.generate_rand_pair(kernel,self.size - 1,int(fout/self.k),fin)
 			else:
-				U1, S1, S1_var_num = self.generate_rand_pair(kernel,4,self.k,fout)
-				U2, S2, S2_var_num = self.generate_rand_pair(kernel,3,self.k,fin)
+				U1, S1, S1_var_num = self.generate_rand_pair(kernel,self.size,self.k,fout)
+				U2, S2, S2_var_num = self.generate_rand_pair(kernel,self.size - 1,self.k,fin)
 			
 			self.var_num += S1_var_num + S2_var_num
 			self.U1s.append(U1)
@@ -68,9 +73,9 @@ class Sketch(object):
 				U2 = U2_list[i]
 				S1 = S1_list[i]
 				S2 = S2_list[i]
-				kernel = kernel + mode_n_prod_T_4(S1,U1,3)
-				kernel = kernel + mode_n_prod_T_4(S2,U2,2)
-			kernel = kernel/(2*self.l)
+				kernel = kernel + mode_n_prod_T_4(S1,U1,self.size - 1)
+				kernel = kernel + mode_n_prod_T_4(S2,U2,self.size - 2)
+			kernel = kernel/(2*self.l) 
 			sk_kernels.append(kernel)
 		return sk_kernels
 
