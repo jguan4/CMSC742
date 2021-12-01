@@ -67,7 +67,7 @@ class HCS(object):
 				Hlist.append(H)
 
 			HCSlists.append(HCS)
-			HCSvarnum += tf.size(HCS)
+			HCSvarnum += tf.size(HCS).numpy()
 			Hs_lists.append(Hlist)
 		return HCSlists, S_lists, Hs_lists, HCSvarnum
 
