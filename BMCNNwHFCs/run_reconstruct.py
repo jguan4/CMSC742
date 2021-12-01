@@ -37,6 +37,7 @@ from python.models.SmallImageBranchingMerging import SmallImageBranchingMerging
 from python.models.Sketch import Sketch
 from python.models.HCS import HCS
 from python.models.CP_Decomp import CP_decomp
+from python.models.Tucker import Tucker
 import tensorflow as tf
 import pandas as pd
 
@@ -48,7 +49,7 @@ def find_best_top1_name(log_dir):
     return best_file
 
 def create_col_names(kernel_reconstruct_method, cap_reconstruct_method, realization):
-    if kernel_reconstruct_method == 'cp':
+    if kernel_reconstruct_method == 'cp' or kernel_reconstruct_method == 'tucker':
         kercolnames = ["kernel_reconstruct_method", "comp_dim", "factor","num_of_var"]
         kervar_ind = 3
     elif kernel_reconstruct_method == 'none':
@@ -58,7 +59,7 @@ def create_col_names(kernel_reconstruct_method, cap_reconstruct_method, realizat
         kercolnames = ["kernel_reconstruct_method", "k", "l", "factor","num_of_var"]
         kervar_ind = 4
 
-    if cap_reconstruct_method == 'cp':
+    if cap_reconstruct_method == 'cp' or cap_reconstruct_method == 'tucker':
         capcolnames = ["cap_reconstruct_method", "comp_dim", "factor","num_of_var"]
         capvar_ind = kervar_ind + 4
     elif cap_reconstruct_method == 'none':
@@ -107,6 +108,17 @@ def cp_recon(model, kernels,compdim,factor,toggle):
         model.load_cap_weights(cp_kernels)
     return var_num
 
+def tk_recon(model, kernels,compdim,factor,toggle):
+    TK = Tucker(factor, compdim)
+    TK.decomp_kernels(kernels)
+    tk_kernels = TK.reconstruct_kernels()
+    var_num = TK.var_num
+    if toggle == 'conv':
+        model.load_conv_kernels(tk_kernels)
+    elif toggle == 'cap':
+        model.load_cap_weights(tk_kernels)
+    return var_num
+
 
 def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
        use_hvcs=True, hvc_type=1, hvc_dims=None, total_convolutions=None,
@@ -139,6 +151,17 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
         ker_facstr = 'True' if ker_cp_factor else 'False'
         ker_realization = 1
         ker_rownum = len(ker_cpdim)
+
+    elif kernel_reconstruct_method == 'tucker':
+        ker_tk_factor = kernel_params['tk_factor']
+        if ker_tk_factor:
+            ker_tkdim = kernel_params['tk_l']
+        else:
+            ker_tkdim = kernel_params['tk_k']
+        ker_facstr = 'True' if ker_tk_factor else 'False'
+        ker_realization = 1
+        ker_rownum = len(ker_tkdim)
+
     else:
         ker_realization = 1
         ker_facstr = 'False'
@@ -169,6 +192,17 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
         cap_facstr = 'True' if cap_cp_factor else 'False'
         cap_realization = 1
         cap_rownum = len(cap_cpdim)
+
+    elif cap_reconstruct_method == 'tucker':
+        cap_tk_factor = cap_params['tk_factor']
+        if cap_tk_factor:
+            cap_tkdim = cap_params['tk_l']
+        else:
+            cap_tkdim = cap_params['tk_k']
+        cap_facstr = 'True' if cap_tk_factor else 'False'
+        cap_realization = 1
+        cap_rownum = len(cap_tkdim)
+
     else:
         cap_facstr = 'False'
         cap_realization = 1
@@ -311,6 +345,25 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             counter +=1
                             infos = []
 
+                    elif cap_reconstruct_method == 'tucker':
+                        infos.append(cap_reconstruct_method)
+                        for ccompdim in cap_tkdim:
+                            infos.append(ccompdim)
+                            infos.append(cap_facstr)
+                            for r in range(realization):
+                                ckpt.restore(weights_file).expect_partial()
+                                ker_varnum = sk_recon(model, kernels,l,k,ker_sk_factor,'conv')
+                                cap_varnum = tk_recon(model,caps, ccompdim, cap_tk_factor,'cap')
+                                if r == 0:
+                                    infos.insert(kervar_ind,ker_varnum)
+                                    infos.append(cap_varnum)
+                                loss,top1,top5 = loops._validate_test()
+                                infos.append(top1.numpy())
+
+                            vals[counter] = infos
+                            counter +=1
+                            infos = []
+
                     else:
                         infos.append(cap_reconstruct_method)
                         infos.append(num_c)
@@ -386,6 +439,25 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                                 ckpt.restore(weights_file).expect_partial()
                                 ker_varnum = hcs_recon(model, kernels,l,k,ker_hcs_factor,'conv')
                                 cap_varnum = cp_recon(model,caps, ccompdim, cap_cp_factor,'cap')
+                                if r == 0:
+                                    infos.insert(kervar_ind,ker_varnum)
+                                    infos.append(cap_varnum)
+                                loss,top1,top5 = loops._validate_test()
+                                infos.append(top1.numpy())
+
+                            vals[counter] = infos
+                            counter +=1
+                            infos = []
+
+                    elif cap_reconstruct_method == 'tucker':
+                        infos.append(cap_reconstruct_method)
+                        for ccompdim in cap_tkdim:
+                            infos.append(ccompdim)
+                            infos.append(cap_facstr)
+                            for r in range(realization):
+                                ckpt.restore(weights_file).expect_partial()
+                                ker_varnum = hcs_recon(model, kernels,l,k,ker_hcs_factor,'conv')
+                                cap_varnum = tk_recon(model,caps, ccompdim, cap_tk_factor,'cap')
                                 if r == 0:
                                     infos.insert(kervar_ind,ker_varnum)
                                     infos.append(cap_varnum)
@@ -478,6 +550,25 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         counter +=1
                         infos = []
 
+                elif cap_reconstruct_method == 'tucker':
+                    infos.append(cap_reconstruct_method)
+                    for ccompdim in cap_tkdim:
+                        infos.append(ccompdim)
+                        infos.append(cap_facstr)
+                        for r in range(realization):
+                            ckpt.restore(weights_file).expect_partial()
+                            ker_varnum = cp_recon(model, kernels,compdim,ker_cp_factor,'conv')
+                            cap_varnum = tk_recon(model,caps, ccompdim, cap_tk_factor,'cap')
+                            if r == 0:
+                                infos.insert(kervar_ind,ker_varnum)
+                                infos.append(cap_varnum)
+                            loss,top1,top5 = loops._validate_test()
+                            infos.append(top1.numpy())
+
+                        vals[counter] = infos
+                        counter +=1
+                        infos = []
+
                 else:
                     infos.append(cap_reconstruct_method)
                     infos.append(num_c)
@@ -492,6 +583,108 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     vals[counter] = infos
                     counter +=1
                     infos = []
+
+        elif kernel_reconstruct_method == 'tucker':
+            infos.append(kernel_reconstruct_method)
+            for compdim in ker_tkdim:
+                infos.append(compdim)
+                infos.append(ker_facstr)
+                if cap_reconstruct_method == 'sk':
+                    infos.append(cap_reconstruct_method)
+                    for ck in cap_sk_k:
+                        for cl in cap_sk_l:
+                            infos.append(ck)
+                            infos.append(cl)
+                            infos.append(cap_facstr)
+                            # print("Start k = {0}, l = {1}:".format(k,l))
+
+                            for r in range(realization):
+                                ckpt.restore(weights_file).expect_partial()
+                                ker_varnum = tk_recon(model, kernels,compdim,ker_tk_factor,'conv')
+                                cap_varnum = sk_recon(model, caps, cl, ck,cap_sk_factor,'cap')
+                                if r == 0:
+                                    infos.insert(kervar_ind,ker_varnum)
+                                    infos.append(cap_varnum)
+                                loss,top1,top5 = loops._validate_test()
+                                infos.append(top1.numpy())
+                            vals[counter] = infos
+                            counter +=1
+                            infos = []
+
+                elif cap_reconstruct_method == 'hcs':
+                    infos.append(cap_reconstruct_method)
+                    for ck in cap_hcs_k:
+                        for cl in cap_hcs_l:
+                            infos.append(ck)
+                            infos.append(cl)
+                            infos.append(cap_facstr)
+                            for r in range(realization):
+                                ckpt.restore(weights_file).expect_partial()
+                                ker_varnum = tk_recon(model, kernels,compdim,ker_tk_factor,'conv')
+                                cap_varnum = hcs_recon(model, caps,cl,ck,cap_hcs_factor,'cap')
+                                if r == 0:
+                                    infos.insert(kervar_ind,ker_varnum)
+                                    infos.append(cap_varnum)
+                                loss,top1,top5 = loops._validate_test()
+                                infos.append(top1.numpy())
+                    
+                            vals[counter] = infos
+                            counter +=1
+                            infos = []
+
+                elif cap_reconstruct_method == 'cp':
+                    infos.append(cap_reconstruct_method)
+                    for ccompdim in cap_cpdim:
+                        infos.append(ccompdim)
+                        infos.append(cap_facstr)
+                        for r in range(realization):
+                            ckpt.restore(weights_file).expect_partial()
+                            ker_varnum = tk_recon(model, kernels,compdim,ker_tk_factor,'conv')
+                            cap_varnum = cp_recon(model,caps, ccompdim, cap_cp_factor,'cap')
+                            if r == 0:
+                                infos.insert(kervar_ind,ker_varnum)
+                                infos.append(cap_varnum)
+                            loss,top1,top5 = loops._validate_test()
+                            infos.append(top1.numpy())
+
+                        vals[counter] = infos
+                        counter +=1
+                        infos = []
+
+                elif cap_reconstruct_method == 'tucker':
+                    infos.append(cap_reconstruct_method)
+                    for ccompdim in cap_tkdim:
+                        infos.append(ccompdim)
+                        infos.append(cap_facstr)
+                        for r in range(realization):
+                            ckpt.restore(weights_file).expect_partial()
+                            ker_varnum = tk_recon(model, kernels,compdim,ker_tk_factor,'conv')
+                            cap_varnum = tk_recon(model,caps, ccompdim, cap_tk_factor,'cap')
+                            if r == 0:
+                                infos.insert(kervar_ind,ker_varnum)
+                                infos.append(cap_varnum)
+                            loss,top1,top5 = loops._validate_test()
+                            infos.append(top1.numpy())
+
+                        vals[counter] = infos
+                        counter +=1
+                        infos = []
+
+                else:
+                    infos.append(cap_reconstruct_method)
+                    infos.append(num_c)
+                    for r in range(realization):
+                        ckpt.restore(weights_file).expect_partial()
+                        ker_varnum = tk_recon(model, kernels,compdim,ker_tk_factor,'conv')
+                        if r == 0:
+                            infos.insert(kervar_ind,ker_varnum)
+                        loss,top1,top5 = loops._validate_test()
+                        infos.append(top1.numpy())
+                    
+                    vals[counter] = infos
+                    counter +=1
+                    infos = []
+
         else:
             infos.append(kernel_reconstruct_method)
             infos.append(num_k)
@@ -551,6 +744,23 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     counter +=1
                     infos = []
 
+            elif cap_reconstruct_method == 'tucker':
+                infos.append(cap_reconstruct_method)
+                for ccompdim in cap_tkdim:
+                    infos.append(ccompdim)
+                    infos.append(cap_facstr)
+                    for r in range(realization):
+                        ckpt.restore(weights_file).expect_partial()
+                        cap_varnum = tk_recon(model,caps, ccompdim, cap_tk_factor,'cap')
+                        if r == 0:
+                            infos.append(cap_varnum)
+                        loss,top1,top5 = loops._validate_test()
+                        infos.append(top1.numpy())
+
+                    vals[counter] = infos
+                    counter +=1
+                    infos = []     
+
             else:
                 infos.append(cap_reconstruct_method)
                 infos.append(num_c)
@@ -586,9 +796,9 @@ if __name__ == "__main__":
 
     # choose merge strategy, options: 0, 1, 2
     merge_strategy = 1
-    # choose reconstruction strategy, options 'sk' (sketch), 'hcs' (higher-order count sketch), 'cp' (CP decomposition), 'none' (no reconstruction)
-    kernel_reconstruct_method = 'none'
-    cap_reconstruct_method = 'hcs'
+    # choose reconstruction strategy, options 'sk' (sketch), 'hcs' (higher-order count sketch), 'cp' (CP decomposition), 'tucker' (tucker_decomposition), none' (no reconstruction)
+    kernel_reconstruct_method = 'tucker'
+    cap_reconstruct_method = 'tucker'
     # number of realizations to average over, used for 'sk' and 'hcs'
     realization_num = 1
 
@@ -603,6 +813,8 @@ if __name__ == "__main__":
         kernel_params = {'hcs_l':[2], 'hcs_k':[2], 'hcs_factor':True}
     elif kernel_reconstruct_method == 'cp':
         kernel_params = {'cp_l':[2], 'cp_k':[2], 'cp_factor': True}
+    elif kernel_reconstruct_method == 'tucker':
+        kernel_params = {'tk_l':[2], 'tk_k':[2], 'tk_factor': False}
     elif kernel_reconstruct_method == 'none':
         kernel_params = None
 
@@ -612,6 +824,8 @@ if __name__ == "__main__":
         cap_params = {'hcs_l':[2], 'hcs_k':[2], 'hcs_factor':True}
     elif cap_reconstruct_method == 'cp':
         cap_params = {'cp_l':[2], 'cp_k':[2], 'cp_factor': True}
+    elif cap_reconstruct_method == 'tucker':
+        cap_params = {'tk_l':[2], 'tk_k':[2], 'tk_factor': False}
     elif cap_reconstruct_method == 'none':
         cap_params = None
 

@@ -24,9 +24,9 @@ class CP_decomp(object):
 				[h, w, fin, fout] = kernel_layer.shape
 			cp_kernel_layer = []
 			if self.cp_factor:
-				cp_rank = self.cp_dim
-			else:
 				cp_rank = fout//self.cp_dim
+			else:
+				cp_rank = self.cp_dim
 			for dim in range(h):
 				factors = parafac(kernel_layer[dim].numpy(), rank=cp_rank)
 				cp_kernel_layer.append(factors)
