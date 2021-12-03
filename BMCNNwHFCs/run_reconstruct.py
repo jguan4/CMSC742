@@ -858,12 +858,14 @@ if __name__ == "__main__":
     p.add_argument("--loss_type", default=1, type=int)
     a = p.parse_args()
 
-    realization_num = 15
+    realization_num = 10
     merge_strategy = 1
 
     settings = [['sk', 'sk'],['sk', 'cp'],['cp', 'sk'],['sk', 'none'],['cp', 'cp'],['cp', 'none']]
-    ks = [1]+ [r for r in range(2,34,2)]
-    ls = [1] + [2**r for r in range(1,7)]
+    # ks = [1]+ [r for r in range(2,34,6)]
+    # ls = [1] + [2**r for r in range(1,7)]
+    ks = [1,2,4,8,16]
+    ls = [1,5,10,20]
     Fs = [True, False]
 
     for s in range(len(settings)):
