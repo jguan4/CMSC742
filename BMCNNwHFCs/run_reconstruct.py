@@ -859,61 +859,62 @@ if __name__ == "__main__":
     a = p.parse_args()
 
     realization_num = 15
+    merge_strategy = 1
 
     settings = [['sk', 'sk'],['sk', 'cp'],['cp', 'sk'],['sk', 'none'],['cp', 'cp'],['cp', 'none']]
     ks = [1]+ [r for r in range(2,34,2)]
     ls = [1] + [2**r for r in range(1,7)]
     Fs = [True, False]
-    for merge_strategy in range(3):
-        for s in range(len(settings)):
-            setting = settings[s]
-            kernel_reconstruct_method = setting[0]
-            cap_reconstruct_method = setting[1]
-            
-            log_dir = "../logs_ms{0}/".format(merge_strategy)
-            sub_dir = os.listdir(log_dir)[0]
-            log_dir += sub_dir 
-            run_name = 'test_' + kernel_reconstruct_method +"_"+cap_reconstruct_method
-            
-            if kernel_reconstruct_method == 'none':
-                F1s = 1
-            else:
-                F1s = 2
-            if cap_reconstruct_method == 'none':
-                F2s = 1
-            else:
-                F2s = 2
-            for i in range(F1s):
-                for j in range(F2s):
-                    F1 = Fs[i]
-                    F2 = Fs[j]
 
-                    if kernel_reconstruct_method == 'sk':
-                        kernel_params = {'sk_l':ls, 'sk_k':ks, 'sk_factor':F1}
-                    elif kernel_reconstruct_method == 'hcs':
-                        kernel_params = {'hcs_l':ls, 'hcs_k':ks, 'hcs_factor':F1}
-                    elif kernel_reconstruct_method == 'cp':
-                        kernel_params = {'cp_l':ks, 'cp_k':ks, 'cp_factor': F1}
-                    elif kernel_reconstruct_method == 'tucker':
-                        kernel_params = {'tk_l':ks, 'tk_k':ks, 'tk_factor': F1}
-                    elif kernel_reconstruct_method == 'none':
-                        kernel_params = None
+    for s in range(len(settings)):
+        setting = settings[s]
+        kernel_reconstruct_method = setting[0]
+        cap_reconstruct_method = setting[1]
+        
+        log_dir = "../logs_ms{0}/".format(merge_strategy)
+        sub_dir = os.listdir(log_dir)[0]
+        log_dir += sub_dir 
+        run_name = 'test_' + kernel_reconstruct_method +"_"+cap_reconstruct_method
+        
+        if kernel_reconstruct_method == 'none':
+            F1s = 1
+        else:
+            F1s = 2
+        if cap_reconstruct_method == 'none':
+            F2s = 1
+        else:
+            F2s = 2
+        for i in range(F1s):
+            for j in range(F2s):
+                F1 = Fs[i]
+                F2 = Fs[j]
 
-                    if cap_reconstruct_method == 'sk':
-                        cap_params = {'sk_l':ls, 'sk_k':ks, 'sk_factor':F2}
-                    elif cap_reconstruct_method == 'hcs':
-                        cap_params = {'hcs_l':ls, 'hcs_k':ks, 'hcs_factor':F2}
-                    elif cap_reconstruct_method == 'cp':
-                        cap_params = {'cp_l':ks, 'cp_k':ks, 'cp_factor': F2}
-                    elif cap_reconstruct_method == 'tucker':
-                        cap_params = {'tk_l':ks, 'tk_k':ks, 'tk_factor': F2}
-                    elif cap_reconstruct_method == 'none':
-                        cap_params = None
+                if kernel_reconstruct_method == 'sk':
+                    kernel_params = {'sk_l':ls, 'sk_k':ks, 'sk_factor':F1}
+                elif kernel_reconstruct_method == 'hcs':
+                    kernel_params = {'hcs_l':ls, 'hcs_k':ks, 'hcs_factor':F1}
+                elif kernel_reconstruct_method == 'cp':
+                    kernel_params = {'cp_l':ks, 'cp_k':ks, 'cp_factor': F1}
+                elif kernel_reconstruct_method == 'tucker':
+                    kernel_params = {'tk_l':ks, 'tk_k':ks, 'tk_factor': F1}
+                elif kernel_reconstruct_method == 'none':
+                    kernel_params = None
 
-                    go(run_name = run_name, data_dir=a.data_dir, log_dir=log_dir,
-                       input_pipeline=a.input_pipeline, merge_strategy=merge_strategy,
-                       use_hvcs=a.use_hvcs, hvc_type=a.hvc_type, hvc_dims=a.hvc_dims,
-                       total_convolutions=a.total_convolutions, branches_after=a.branches_after, loss_type = a.loss_type, realization = realization_num, kernel_reconstruct_method = kernel_reconstruct_method, kernel_params = kernel_params, cap_reconstruct_method = cap_reconstruct_method, cap_params = cap_params)
+                if cap_reconstruct_method == 'sk':
+                    cap_params = {'sk_l':ls, 'sk_k':ks, 'sk_factor':F2}
+                elif cap_reconstruct_method == 'hcs':
+                    cap_params = {'hcs_l':ls, 'hcs_k':ks, 'hcs_factor':F2}
+                elif cap_reconstruct_method == 'cp':
+                    cap_params = {'cp_l':ks, 'cp_k':ks, 'cp_factor': F2}
+                elif cap_reconstruct_method == 'tucker':
+                    cap_params = {'tk_l':ks, 'tk_k':ks, 'tk_factor': F2}
+                elif cap_reconstruct_method == 'none':
+                    cap_params = None
+
+                go(run_name = run_name, data_dir=a.data_dir, log_dir=log_dir,
+                   input_pipeline=a.input_pipeline, merge_strategy=merge_strategy,
+                   use_hvcs=a.use_hvcs, hvc_type=a.hvc_type, hvc_dims=a.hvc_dims,
+                   total_convolutions=a.total_convolutions, branches_after=a.branches_after, loss_type = a.loss_type, realization = realization_num, kernel_reconstruct_method = kernel_reconstruct_method, kernel_params = kernel_params, cap_reconstruct_method = cap_reconstruct_method, cap_params = cap_params)
 
 
 
