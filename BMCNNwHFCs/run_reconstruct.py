@@ -277,16 +277,16 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
         counter = 1
         infos = []
         if kernel_reconstruct_method == 'sk':
-            infos.append(kernel_reconstruct_method)
             for k in ker_sk_k:
                 for l in ker_sk_l:
-                    infos.append(k)
-                    infos.append(l)
-                    infos.append(ker_facstr)
                     if cap_reconstruct_method == 'sk':
-                        infos.append(cap_reconstruct_method)
                         for ck in cap_sk_k:
                             for cl in cap_sk_l:
+                                infos.append(kernel_reconstruct_method)
+                                infos.append(k)
+                                infos.append(l)
+                                infos.append(ker_facstr)
+                                infos.append(cap_reconstruct_method)
                                 infos.append(ck)
                                 infos.append(cl)
                                 infos.append(cap_facstr)
@@ -306,9 +306,13 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                                 infos = []
 
                     elif cap_reconstruct_method == 'hcs':
-                        infos.append(cap_reconstruct_method)
                         for ck in cap_hcs_k:
                             for cl in cap_hcs_l:
+                                infos.append(kernel_reconstruct_method)
+                                infos.append(k)
+                                infos.append(l)
+                                infos.append(ker_facstr)
+                                infos.append(cap_reconstruct_method)
                                 infos.append(ck)
                                 infos.append(cl)
                                 infos.append(cap_facstr)
@@ -327,8 +331,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                                 infos = []
 
                     elif cap_reconstruct_method == 'cp':
-                        infos.append(cap_reconstruct_method)
                         for ccompdim in cap_cpdim:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(k)
+                            infos.append(l)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ccompdim)
                             infos.append(cap_facstr)
                             for r in range(realization):
@@ -346,8 +354,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                     elif cap_reconstruct_method == 'tucker':
-                        infos.append(cap_reconstruct_method)
                         for ccompdim in cap_tkdim:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(k)
+                            infos.append(l)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ccompdim)
                             infos.append(cap_facstr)
                             for r in range(realization):
@@ -365,6 +377,10 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                     else:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(k)
+                        infos.append(l)
+                        infos.append(ker_facstr)
                         infos.append(cap_reconstruct_method)
                         infos.append(num_c)
                         for r in range(realization):
@@ -380,17 +396,17 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
         elif kernel_reconstruct_method == 'hcs':
-            infos.append(kernel_reconstruct_method)
             for k in ker_hcs_k:
                 for l in ker_hcs_l:
-                    infos.append(k)
-                    infos.append(l)
-                    infos.append(ker_facstr)
                     # print("Start k = {0}, l = {1}:".format(k,l))
                     if cap_reconstruct_method == 'sk':
-                        infos.append(cap_reconstruct_method)
                         for ck in cap_sk_k:
                             for cl in cap_sk_l:
+                                infos.append(kernel_reconstruct_method)
+                                infos.append(k)
+                                infos.append(l)
+                                infos.append(ker_facstr)
+                                infos.append(cap_reconstruct_method)
                                 infos.append(ck)
                                 infos.append(cl)
                                 infos.append(cap_facstr)
@@ -410,9 +426,13 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                                 infos = []
 
                     elif cap_reconstruct_method == 'hcs':
-                        infos.append(cap_reconstruct_method)
                         for ck in cap_hcs_k:
                             for cl in cap_hcs_l:
+                                infos.append(kernel_reconstruct_method)
+                                infos.append(k)
+                                infos.append(l)
+                                infos.append(ker_facstr)
+                                infos.append(cap_reconstruct_method)
                                 infos.append(ck)
                                 infos.append(cl)
                                 infos.append(cap_facstr)
@@ -431,8 +451,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                                 infos = []
 
                     elif cap_reconstruct_method == 'cp':
-                        infos.append(cap_reconstruct_method)
                         for ccompdim in cap_cpdim:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(k)
+                            infos.append(l)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ccompdim)
                             infos.append(cap_facstr)
                             for r in range(realization):
@@ -450,8 +474,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                     elif cap_reconstruct_method == 'tucker':
-                        infos.append(cap_reconstruct_method)
                         for ccompdim in cap_tkdim:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(k)
+                            infos.append(l)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ccompdim)
                             infos.append(cap_facstr)
                             for r in range(realization):
@@ -469,6 +497,10 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                     else:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(k)
+                        infos.append(l)
+                        infos.append(ker_facstr)
                         infos.append(cap_reconstruct_method)
                         infos.append(num_c)
                         for r in range(realization):
@@ -484,14 +516,14 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
                     
         elif kernel_reconstruct_method == 'cp':
-            infos.append(kernel_reconstruct_method)
-            for compdim in ker_cpdim:
-                infos.append(compdim)
-                infos.append(ker_facstr)
+            for compdim in ker_cpdim:  
                 if cap_reconstruct_method == 'sk':
-                    infos.append(cap_reconstruct_method)
                     for ck in cap_sk_k:
                         for cl in cap_sk_l:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(compdim)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ck)
                             infos.append(cl)
                             infos.append(cap_facstr)
@@ -511,9 +543,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                 elif cap_reconstruct_method == 'hcs':
-                    infos.append(cap_reconstruct_method)
                     for ck in cap_hcs_k:
                         for cl in cap_hcs_l:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(compdim)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ck)
                             infos.append(cl)
                             infos.append(cap_facstr)
@@ -532,8 +567,11 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                 elif cap_reconstruct_method == 'cp':
-                    infos.append(cap_reconstruct_method)
                     for ccompdim in cap_cpdim:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(compdim)
+                        infos.append(ker_facstr)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ccompdim)
                         infos.append(cap_facstr)
                         for r in range(realization):
@@ -551,8 +589,11 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
                 elif cap_reconstruct_method == 'tucker':
-                    infos.append(cap_reconstruct_method)
                     for ccompdim in cap_tkdim:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(compdim)
+                        infos.append(ker_facstr)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ccompdim)
                         infos.append(cap_facstr)
                         for r in range(realization):
@@ -570,6 +611,9 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
                 else:
+                    infos.append(kernel_reconstruct_method)
+                    infos.append(compdim)
+                    infos.append(ker_facstr)
                     infos.append(cap_reconstruct_method)
                     infos.append(num_c)
                     for r in range(realization):
@@ -585,14 +629,14 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     infos = []
 
         elif kernel_reconstruct_method == 'tucker':
-            infos.append(kernel_reconstruct_method)
             for compdim in ker_tkdim:
-                infos.append(compdim)
-                infos.append(ker_facstr)
                 if cap_reconstruct_method == 'sk':
-                    infos.append(cap_reconstruct_method)
                     for ck in cap_sk_k:
                         for cl in cap_sk_l:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(compdim)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ck)
                             infos.append(cl)
                             infos.append(cap_facstr)
@@ -612,9 +656,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                 elif cap_reconstruct_method == 'hcs':
-                    infos.append(cap_reconstruct_method)
                     for ck in cap_hcs_k:
                         for cl in cap_hcs_l:
+                            infos.append(kernel_reconstruct_method)
+                            infos.append(compdim)
+                            infos.append(ker_facstr)
+                            infos.append(cap_reconstruct_method)
                             infos.append(ck)
                             infos.append(cl)
                             infos.append(cap_facstr)
@@ -633,8 +680,11 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                             infos = []
 
                 elif cap_reconstruct_method == 'cp':
-                    infos.append(cap_reconstruct_method)
                     for ccompdim in cap_cpdim:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(compdim)
+                        infos.append(ker_facstr)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ccompdim)
                         infos.append(cap_facstr)
                         for r in range(realization):
@@ -652,8 +702,11 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
                 elif cap_reconstruct_method == 'tucker':
-                    infos.append(cap_reconstruct_method)
                     for ccompdim in cap_tkdim:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(compdim)
+                        infos.append(ker_facstr)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ccompdim)
                         infos.append(cap_facstr)
                         for r in range(realization):
@@ -671,6 +724,9 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
                 else:
+                    infos.append(kernel_reconstruct_method)
+                    infos.append(compdim)
+                    infos.append(ker_facstr)
                     infos.append(cap_reconstruct_method)
                     infos.append(num_c)
                     for r in range(realization):
@@ -686,12 +742,12 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     infos = []
 
         else:
-            infos.append(kernel_reconstruct_method)
-            infos.append(num_k)
             if cap_reconstruct_method == 'sk':
-                infos.append(cap_reconstruct_method)
                 for ck in cap_sk_k:
                     for cl in cap_sk_l:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(num_k)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ck)
                         infos.append(cl)
                         infos.append(cap_facstr)
@@ -709,9 +765,11 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
             elif cap_reconstruct_method == 'hcs':
-                infos.append(cap_reconstruct_method)
                 for ck in cap_hcs_k:
                     for cl in cap_hcs_l:
+                        infos.append(kernel_reconstruct_method)
+                        infos.append(num_k)
+                        infos.append(cap_reconstruct_method)
                         infos.append(ck)
                         infos.append(cl)
                         infos.append(cap_facstr)
@@ -728,8 +786,10 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                         infos = []
 
             elif cap_reconstruct_method == 'cp':
-                infos.append(cap_reconstruct_method)
                 for ccompdim in cap_cpdim:
+                    infos.append(kernel_reconstruct_method)
+                    infos.append(num_k)
+                    infos.append(cap_reconstruct_method)
                     infos.append(ccompdim)
                     infos.append(cap_facstr)
                     for r in range(realization):
@@ -745,8 +805,10 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     infos = []
 
             elif cap_reconstruct_method == 'tucker':
-                infos.append(cap_reconstruct_method)
                 for ccompdim in cap_tkdim:
+                    infos.append(kernel_reconstruct_method)
+                    infos.append(num_k)
+                    infos.append(cap_reconstruct_method)
                     infos.append(ccompdim)
                     infos.append(cap_facstr)
                     for r in range(realization):
@@ -762,6 +824,8 @@ def go(run_name, data_dir, log_dir, input_pipeline, merge_strategy, loss_type,
                     infos = []     
 
             else:
+                infos.append(kernel_reconstruct_method)
+                infos.append(num_k)
                 infos.append(cap_reconstruct_method)
                 infos.append(num_c)
                 for r in range(realization):
@@ -797,10 +861,10 @@ if __name__ == "__main__":
     # choose merge strategy, options: 0, 1, 2
     merge_strategy = 1
     # choose reconstruction strategy, options 'sk' (sketch), 'hcs' (higher-order count sketch), 'cp' (CP decomposition), 'tucker' (tucker_decomposition), none' (no reconstruction)
-    kernel_reconstruct_method = 'tucker'
-    cap_reconstruct_method = 'tucker'
+    kernel_reconstruct_method = 'sk'
+    cap_reconstruct_method = 'hcs'
     # number of realizations to average over, used for 'sk' and 'hcs'
-    realization_num = 1
+    realization_num = 15
 
     log_dir = "../logs_ms{0}/".format(merge_strategy)
     sub_dir = os.listdir(log_dir)[0]
@@ -808,24 +872,24 @@ if __name__ == "__main__":
     run_name = 'test_' + kernel_reconstruct_method +"_"+cap_reconstruct_method
 
     if kernel_reconstruct_method == 'sk':
-        kernel_params = {'sk_l':[2], 'sk_k':[2], 'sk_factor':True}
+        kernel_params = {'sk_l':[2,3], 'sk_k':[2,3], 'sk_factor':False}
     elif kernel_reconstruct_method == 'hcs':
-        kernel_params = {'hcs_l':[2], 'hcs_k':[2], 'hcs_factor':True}
+        kernel_params = {'hcs_l':[2,3], 'hcs_k':[2,3], 'hcs_factor':True}
     elif kernel_reconstruct_method == 'cp':
-        kernel_params = {'cp_l':[2], 'cp_k':[2], 'cp_factor': True}
+        kernel_params = {'cp_l':[2,3], 'cp_k':[2,3], 'cp_factor': True}
     elif kernel_reconstruct_method == 'tucker':
-        kernel_params = {'tk_l':[2], 'tk_k':[2], 'tk_factor': False}
+        kernel_params = {'tk_l':[2,3], 'tk_k':[2,3], 'tk_factor': False}
     elif kernel_reconstruct_method == 'none':
         kernel_params = None
 
     if cap_reconstruct_method == 'sk':
-        cap_params = {'sk_l':[2], 'sk_k':[2], 'sk_factor':True}
+        cap_params = {'sk_l':[2,3], 'sk_k':[2,3], 'sk_factor':True}
     elif cap_reconstruct_method == 'hcs':
-        cap_params = {'hcs_l':[2], 'hcs_k':[2], 'hcs_factor':True}
+        cap_params = {'hcs_l':[2,3], 'hcs_k':[2,3], 'hcs_factor':True}
     elif cap_reconstruct_method == 'cp':
-        cap_params = {'cp_l':[2], 'cp_k':[2], 'cp_factor': True}
+        cap_params = {'cp_l':[2,3], 'cp_k':[2,3], 'cp_factor': True}
     elif cap_reconstruct_method == 'tucker':
-        cap_params = {'tk_l':[2], 'tk_k':[2], 'tk_factor': False}
+        cap_params = {'tk_l':[2,3], 'tk_k':[2,3], 'tk_factor': False}
     elif cap_reconstruct_method == 'none':
         cap_params = None
 
